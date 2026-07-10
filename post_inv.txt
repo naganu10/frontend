@@ -1,0 +1,54 @@
+ Photographs in the pdf
+ignoring postinvestigation document in pre-investigation
+PostInvestigation:
+
+T1 — ClaimStatus enum + CHECK migration (only status schema change)
+    - models.py:45, migrations/008_extend_claim_status.sql · Deps: none
+▎ T6 = the API endpoint stops faking a response, and instead registers the claim + job in Postgres and hands the work to the worker — exactly like the pre-investigation endpoint already does.
+- checking for the dedups, new versus old documents thats submitted
+- [ ] T3 — Question response-tracking columns (was_asked/was_answered/response_summary/…) [P0-3]
+    - models.py (Question), migrations/009_add_question_response_columns.sql · Deps: none
+ Build a new pure-read module tools/baseline.py with load_pre_inv_baseline(claim_id) (latest PRE run's questions + triggered rules + document checklist + investigation areas) and get_working_corpus(claim_id) (all prior ∪ new processed documents, rehydrated into the pipeline's processed_documents dict shape) — no schema change.
+▎ T6 = the API endpoint stops faking a response, and instead registers the claim + job in Postgres and hands the work to the worker — exactly like the pre-investigation endpoint already does.
+
+ T6 = the worker picks the queued second-run job off the queue, gathers the report + prior questions + new docs into a context, and runs the real grading pipeline — the piece that makes "submit a second run" actually execute.
+
+
+# Post-Investigation Build — Tasks (final)
+
+## Phase 0 — Schema & fixes
+- [ ] T1 — ClaimStatus enum + CHECK migration (add POST_INV_STARTED/DONE, REINVESTIGATE_OPEN, …)
+- [ ] T2 — Add gaps_identified JSONB column to sqc_results + fix report_gaps read bug (routes.py:825)
+- [ ] T3 — Add response-tracking columns to analysis.questions:
+        was_asked, was_answered, response_summary, response_satisfactory, answered_at   (LLD p57)
+
+## Phase 1 — Read helper (memory of run 1)
+- [ ] T4 — New module tools/baseline.py:
+        load_pre_inv_baseline(claim_id) = latest PRE run's questions + triggered rules + checklist + areas
+        get_working_corpus(claim_id)   = all prior∪new processed docs, rehydrated to processed_documents shape
+
+## Phase 2 — Wire the route to run for real
+- [ ] T5 — Replace stub route: upsert Claim (POST_INV_STARTED, callback_url) + job_queue row + enqueue  [M-6]
+- [ ] T6 — Worker post task + build context: enqueue_post_claim_job + run_post_claim_job →
+        execute_post_investigation; context = new docs + investigation_report text + baseline questions (T4)
+
+## Phase 3 — Ingestion / corpus
+- [ ] T7 — Skip-if-already-ingested dedup guard (filter inputs by existing external_doc_id)  [P1-3]
+- [ ] T8 — Inject investigation report into corpus as an embeddable doc  [P1-2]
+- [ ] T9 — Cumulative corpus via get_working_corpus (prior ∪ new)  [M-2]
+
+## Phase 4 — Persistence + tracking
+- [ ] T10 — _store_post_result: set claims.status (POST_INV_DONE/REINVESTIGATE_OPEN) +
+        write requires_reinvestigation, reinvestigation_areas, confidence, run_number into raw_outputs  [M-4+M-5]
+- [ ] T11 — Per-question answer write-back: UPDATE analysis.questions.was_answered/response_summary/…  [P7-4]
+- [ ] T12 — Run-history read: GET /ui/claims/{id}/post-runs (ROW_NUMBER as run_number)
+
+## Phase 5 — Verify
+- [ ] T13 — E2E: pre → post → second post; assert 2 POST rows + run_number, status transitions,
+        questions answered/gaps, cumulative corpus, no duplicate chunks
+
+Why nothing repeats (the three that looked overlapping):
+- T3 vs T4 vs T11 — different verbs on analysis.questions: create columns / read questions / write answers.
+- T2 — the only task about gaps (adds the column + fixes the reader together).
+- T4 — the only read-helper module (both load_pre_inv_baseline + get_working_corpus).
+- T10 — the only task that edits _store_post_result (status + raw_outputs together).
