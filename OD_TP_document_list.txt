@@ -1,0 +1,127 @@
+MOTOR CLAIM DOCUMENT LIST - OWN DAMAGE (OD) vs THIRD PARTY (TP)
+================================================================
+Prepared: 2026-10-06
+Sources:
+  1. Client attribute sheet (31 document rows, pasted)
+  2. bgi_v2_with_chuck/src/sqc/skills/instructions/document_classification.md
+     (65 classifier labels)
+  3. Pipeline base checklists in triage.py (_REQUIRED_DOCS) and
+     supervisor.py (_generate_document_checklist)
+
+Legend:  [M] = mandatory / core for that claim type
+         [C] = conditional (depends on case: theft, death, injury, commercial
+               vehicle, total loss, financed vehicle, MACT filed, etc.)
+         Classifier label shown in brackets, e.g. (fir)
+
+
+----------------------------------------------------------------
+SECTION A - DOCUMENTS COMMON TO BOTH OD AND TP CLAIMS
+----------------------------------------------------------------
+ 1. Claim Form / Motor Insurance Claim Form        (claim_form)            [M]
+ 2. Claim Intimation / Claim Summary Sheet         (claim_intimation)      [M]
+ 3. Policy Copy of IV / TP vehicle                 (policy_copy)           [M]
+ 4. FIR                                            (fir)                   [M] TP / [C] OD (theft, major accident, third-party involvement)
+ 5. RC Copy of IV                                  (rc_book)               [M]
+ 6. DL Copy of IV Driver                           (driving_license)       [M]
+ 7. Extract copy of DL (Sarathi / VAHAN printout)  (extract_dl)            [C]
+ 8. Aadhaar Card                                   (aadhaar_card)          [M] KYC
+ 9. PAN Card                                       (pan_card)              [M] KYC
+10. Permit Copy / Extract of IV                    (permit)                [C] commercial vehicle only
+11. Copy / Extract of Fitness Certificate of IV    (fitness_certificate)   [C] commercial vehicle only
+12. PUC Certificate                                (puc_certificate)       [C]
+13. Road Tax Receipt / Tax Token                   (tax_receipt)           [C]
+14. Spot Panchanama / Sketch                       (panchanama)            [C]
+15. Accident Report (Form AIR)                     (accident_report)       [C]
+16. Motor Vehicle Inspection Report (MVI)          (motor_vehicle_inspection) [C]
+17. Insured Statement                              (insured_statement)     [M]
+18. Driver Statement                               (driver_statement)      [M]
+19. Survey / Investigation Report                  (survey_report)         [M] OD / [C] TP (investigation report)
+20. Surveyor / Investigator Fee Receipt            (surveyor_fee_receipt)  [C]
+21. IIB Report (Insurance Information Bureau)      (iib_report)            [C]
+22. Correspondence (letters, emails, notices)      (correspondence)        [C]
+23. Photographs (vehicle / spot / damage)          (photograph)            [C]
+24. RTI Response                                   (rti_response)          [C]
+25. Other / unclassified                           (other)                 [C]
+
+
+----------------------------------------------------------------
+SECTION B - OWN DAMAGE (OD) CLAIM DOCUMENTS
+----------------------------------------------------------------
+Core set (all Section A items that apply) PLUS:
+
+ 1. Repair Estimate / Job Card / Garage Tax Invoice (repair_estimate)      [M]
+ 2. Payment Slip / Receipt / Discharge-Satisfaction Voucher (payment_slip) [M]
+ 3. Towing / Recovery / Flatbed bill               (towing)                [C]
+ 4. NCB Certificate / NCB recovery letter          (ncb_certificate)       [C]
+ 5. Trade Certificate (Form 16/17)                 (trade_certificate)     [C] dealer / unregistered vehicle
+ 6. Sale Certificate (Form 21)                     (sale_certificate)      [C] new vehicle / total loss / IDV check
+ 7. Certificate of Compliance / Roadworthiness (Form 22) (compliance_certificate) [C]
+ 8. Vehicle Purchase Invoice (dealer sale invoice) (purchase_invoice)      [C] total loss / IDV check
+ 9. Delivery Note / Challan                        (delivery_note)         [C]
+10. Registration Application (Form 20)             (registration_application) [C]
+11. Transfer of Ownership (Form 29/30)             (transfer_of_ownership) [C] ownership mismatch
+12. Hypothecation Form (Form 34/35)                (hypothecation_form)    [C] financed vehicle / total loss payout
+13. NOC from financier / RTO                       (noc)                   [C] theft / total loss / transfer
+14. Untraced / Non-traceable Final Report          (untraced_report)       [C] theft claim
+15. Seizure Memo                                   (seizure_memo)          [C] police seized vehicle
+16. Charge Sheet / Final Report                    (charge_sheet)          [C] theft / accident with police case
+
+Pipeline hard-coded OD base checklist (for reference):
+  triage.py      : CLAIM_APPLICATION, DRIVING_LICENSE, RC_BOOK
+  supervisor.py  : FIR, RC Book, Driving License, Workshop Estimate
+
+
+----------------------------------------------------------------
+SECTION C - THIRD PARTY (TP) CLAIM DOCUMENTS
+----------------------------------------------------------------
+Core set (all Section A items that apply) PLUS:
+
+-- Police / investigation --
+ 1. FIR                                            (fir)                   [M]
+ 2. Charge Sheet                                   (charge_sheet)          [M]
+ 3. Case Diary                                     (case_diary)            [C]
+ 4. 161 Statements of Witnesses                    (statement_161)         [M]
+ 5. Arrest Memo                                    (arrest_memo)           [C]
+ 6. Seizure Memo                                   (seizure_memo)          [C]
+ 7. Inquest Panchanama / Inquest Report            (inquest_report)        [M] death case
+ 8. Spot Panchanama / Sketch                       (panchanama)            [M]
+ 9. Motor Vehicle Inspection Report                (motor_vehicle_inspection) [M]
+
+-- Third-party (TP) vehicle / driver --
+10. DL Copy of TP Driver                           (driving_license)       [M]
+11. RC Copy of TP vehicle                          (rc_book)               [M]
+12. Permit Copy / Extract of TP vehicle            (permit)                [C] commercial
+13. TP Vehicle Documents (policy, fitness, etc.)   (policy_copy / fitness_certificate / rc_book) [M]
+
+-- Medical (injury case) --
+14. MLC / Wound Certificate / Accident Register    (mlc)                   [M] injury
+15. Hospital Bills                                 (hospital_bill)         [M] injury
+16. All Medicine Bills                             (medicine_bill)         [M] injury
+17. Discharge Card / Discharge Summary             (discharge_certificate) [M] injury
+18. Medical Records / case papers / referral       (medical_record)        [C]
+19. Disability Certificate                         (disability_certificate)[C] permanent disability
+
+-- Medical / civil (death case) --
+20. Post Mortem Report                             (post_mortem)           [M] death
+21. Death Certificate                              (death_certificate)     [M] death
+22. Legal Heir Certificate                         (legal_heir_certificate)[M] death
+23. Age Proof of deceased / claimant               (age_proof)             [C]
+
+-- Compensation basis --
+24. Income Proof of Deceased / Injured             (income_proof)          [M]
+25. Claimant Statement                             (claimant_statement)    [M]
+
+-- MACT / legal --
+26. Petition Copy (Form Comp-A, u/s 166 / 163A)    (petition)              [M]
+27. MACT Summons / Notice to Opposite Party        (summons)               [C] if MACT filed
+28. Legal Notice / Show Cause Notice               (legal_notice)          [C]
+29. Vakalatnama                                    (vakalatnama)           [C]
+30. Written Statement filed by insurer             (written_statement)     [C]
+31. MACT Judgement / Award                         (mact_judgement)        [C] post-award
+
+Pipeline hard-coded TP base checklist (for reference):
+  triage.py      : CLAIM_APPLICATION, FIR, MEDICAL_BILL
+  supervisor.py  : FIR, Medical Records, MACT Summons (optional)
+
+
+
